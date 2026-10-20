@@ -95,4 +95,19 @@ I (454887) wifi station:   RSSI: 0 dBm
 | Пункт 7 — LED read після write `0x00` | Після вимкнення LED повторно виконати Read LED-характеристики. | FR-G5: прочитаний стан відповідає `0x00` (LED вимкнений). | Після нового Read застосунок показує `Last Read: LED Disabled` і `Last Write: LED Disabled`. Це декодований стан; сирий байт у скріні не відображений. | [Скріншот читання LED](evidence/ble/led_read_off_nrf.jpg) | PASS для стану; сирий байт не показано |
 | Пункт 8 — конфлікт каналів керування LED | Записати `0x01` у LED-характеристику через BLE, виконати `led off` через UART, потім знову прочитати LED через BLE. | FR-G5: Read повертає актуальний стан `0x00` після вимкнення LED через інший канал. | UART: BLE write `01` → `LED ON!`, після команди `led off` → `LED OFF!`. Новий Read у nRF Connect показав `Last Read: LED Disabled` при `Last Write: LED Enabled`; фізичний RGB LED на платі згас. Застосунок показує декодований стан, сирий байт у скріні не відображений. | [UART-лог](evidence/ble/led_dual_channel_uart.png), [nRF Connect](evidence/ble/led_dual_channel_nrf.jpg), [фото плати](evidence/ble/led_dual_channel_board.jpg) | PASS для актуального стану; сирий байт не показано |
 
-Решту ручних перевірок і результат BLE-автотесту додамо після їх виконання.
+Решту ручних перевірок додамо після їх виконання.
+
+### B2 — BLE smoke test
+
+Команда: `python -m pytest tests/ble/test_ble_smoke.py -v` у `.venv` (2026-10-21, прошивка `Bluedroid_GATT_Server`). Bluetooth на Mac увімкнено. Порт UART тест знайшов автоматично за VID через фікстуру `device`.
+
+Тест знайшов `SENTRY-BLE`, підключився, записав `0x01` і `0x00` у LED-характеристику та після кожного запису підтвердив через UART відповідно `LED ON!` і `LED OFF!`. BLE-з'єднання закрито фікстурою після тесту.
+
+```text
+tests/ble/test_ble_smoke.py::test_ble_led_dual_channel PASSED            [100%]
+============================== 1 passed in 12.05s ===============================
+```
+
+Доказ: [скріншот прогону `pytest -v`](evidence/ble/pytest_ble_smoke_pass.png), на якому видно команду, `PASSED` і підсумок `1 passed in 12.05s`.
+
+Результат: **PASS**. Перші два прогони після ручного від'єднання телефона пройшли. Після доповнення фікстури виконано ще один прогін, коли nRF Connect на телефоні показував `Connected`: якщо перший пошук не бачить `SENTRY-BLE`, фікстура надсилає UART-команду `disconnect` і повторює сканування. Тест пройшов без ручного від'єднання телефона (`1 passed in 6.37s`). Окремий прогін користувача наведено на скріншоті вище.
