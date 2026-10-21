@@ -103,7 +103,7 @@ I (454887) wifi station:   RSSI: 0 dBm
 
 ### B2 — BLE smoke test
 
-Команда: `python -m pytest tests/ble/test_ble_smoke.py -v` у `.venv` (2026-10-21, прошивка `Bluedroid_GATT_Server`). Bluetooth на Mac увімкнено. Порт UART тест знайшов автоматично за VID через фікстуру `device`.
+Команда: `python -m pytest tests/ble/test_ble_smoke.py -v`. Bluetooth на Mac увімкнено. Порт UART тест знайшов автоматично за VID через фікстуру `device`.
 
 Тест знайшов `SENTRY-BLE`, підключився, записав `0x01` і `0x00` у LED-характеристику та після кожного запису підтвердив через UART відповідно `LED ON!` і `LED OFF!`. BLE-з'єднання закрито фікстурою після тесту.
 
